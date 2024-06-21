@@ -12,10 +12,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
         binding.apply {
 
             viewer.setOnScrollListener(object:OnScrollListener{
-                override fun onScrolled(dx: Int, dy: Int, y: Int) {
-                    Log.d("AAAA", "onScrolled dx, dy, y : $dx, $dy, $y")
+                override fun onScrolled(dx: Int, dy: Int) {
+                    Log.d("AAAA", "onScrolled dx, dy : $dx, $dy")
                     Log.d("AAAA", "onScrolled viewer.height : ${viewer.height}")
-                    sBar.y = y.toFloat()
                 }
 
                 override fun onScrollStateChanged(newState: Int) {
@@ -143,7 +142,15 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                     "https://image-comic.pstatic.net/webtoon/762279/128/20240501210706_d25fc3b2cf77b989db9678c7b8347da1_IMAG01_103.jpg",
                     "https://image-comic.pstatic.net/webtoon/762279/128/20240501210706_d25fc3b2cf77b989db9678c7b8347da1_IMAG01_104.jpg"
                 )
-                viewer.setData(list)
+
+//                var list = listOf("https://i.pinimg.com/originals/1a/13/2d/1a132dee024ad10ac3a14dcb69ca0755.gif")
+//                var list = listOf("https://drive.google.com/file/d/1XEFm25FLyyp9v7ru0DMZqcGGGGHNK15h/view?usp=drive_link")
+                viewer.setData(list, mapOf(
+                    "Referer" to "https://comic.naver.com",
+                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+                ))
+
+//                viewer.setData(list, mapOf())
             }
         }
     }

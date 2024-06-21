@@ -17,6 +17,14 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"/>
 
+    <ImageView
+        android:id="@+id/scrollbar"
+        android:layout_width="20dp"
+        android:layout_height="50dp"
+        android:background="@android:color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
 <!--    <androidx.core.widget.NestedScrollView-->
 <!--        android:id="@+id/nsv"-->
 <!--        android:layout_width="match_parent"-->

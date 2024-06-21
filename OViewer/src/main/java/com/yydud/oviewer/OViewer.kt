@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -29,15 +30,22 @@ import kotlinx.coroutines.withContext
 
 public class OViewer : LinearLayout {
     // URL 데이터
-    private var data: MutableList<String> = mutableListOf()
+    private var items: MutableList<String> = mutableListOf()
+    private var headers = mapOf<String, String>()
 
     // 레이아웃 정의
     private lateinit var rv: RecyclerView
+    private lateinit var scrollbar: ImageView
 //    private lateinit var nsv: NestedScrollView
 
+
+    // 스크롤바 관련
     private var onScrollListener: OnScrollListener? = null
+    private var isScrollBarEnabled = false
+    private var isScrollBarDragging = false
+    private var lastTouchY = 0f
 
-
+    // 리사이클러뷰 관련
     private lateinit var adapter: RvAdapter
     private var snapHelper: PagerSnapHelper? = null
 
@@ -60,9 +68,17 @@ public class OViewer : LinearLayout {
 
         // 레이아웃의 ID 정의
         rv = findViewById(R.id.rv)
+        scrollbar = findViewById(R.id.scrollbar)
 //        nsv = findViewById(R.id.nsv)
 
         setupRecyclerView(ModeType.VERTICAL)
+
+        if(isScrollBarEnabled){
+            scrollbar.visibility = VISIBLE
+        }
+        else{
+            scrollbar.visibility = GONE
+        }
     }
 
     /**
@@ -77,39 +93,85 @@ public class OViewer : LinearLayout {
     private fun setupRecyclerView(mode: ModeType) {
         // 레이아웃 매니저 설정
         snapHelper?.attachToRecyclerView(null) // 스냅 헬퍼 분리
+        // 이벤트 제거
+        rv.clearOnScrollListeners()
+
         rv.layoutManager = if (ModeType.VERTICAL == mode) {
-            LinearLayoutManager(context)
+            LinearLayoutManager(context).also {
+                rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                        super.onScrolled(recyclerView, dx, dy)
+                        // 리사이클러뷰의 총 높이
+                        val totalHeight = recyclerView.computeVerticalScrollRange()
+                        // 리사이클러뷰의 현재 스크롤 위치
+                        val scrollY = recyclerView.computeVerticalScrollOffset()
+                        // 리사이클러뷰의 실제 높이
+                        val recyclerViewHeight = recyclerView.height
+                        // 스크롤바의 높이
+                        val scrollBarHeight = scrollbar.height
+
+                        // 스크롤바의 y좌표 계산
+                        var scrollBarY = (scrollY.toFloat() / (totalHeight - recyclerViewHeight)) * (recyclerViewHeight - scrollBarHeight)
+
+                        // 스크롤바의 위치가 리사이클러뷰 영역을 벗어나지 않도록 보정
+                        if (scrollBarY < 0) {
+                            scrollBarY = 0f
+                        } else if (scrollBarY > recyclerViewHeight - scrollBarHeight) {
+                            scrollBarY = (recyclerViewHeight - scrollBarHeight).toFloat()
+                        }
+
+                        // 스크롤바의 위치 변경
+                        scrollbar.y = scrollBarY
+
+                        onScrollListener?.onScrolled(dx, dy)
+                    }
+
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        super.onScrollStateChanged(recyclerView, newState)
+                        onScrollListener?.onScrollStateChanged(newState)
+                    }
+                })
+
+                scrollbar.setOnTouchListener { _, event ->
+                    if(!isScrollBarEnabled) return@setOnTouchListener false
+
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            isScrollBarDragging = true
+                            lastTouchY = event.y
+                            true
+                        }
+                        MotionEvent.ACTION_MOVE -> {
+                            if (isScrollBarDragging) {
+                                val deltaY = event.y - lastTouchY
+
+                                // 스크롤바의 새로운 y좌표 계산
+                                var newScrollBarY = scrollbar.y + deltaY
+                                newScrollBarY = newScrollBarY.coerceIn(0f, (rv.height - scrollbar.height).toFloat())
+                                scrollbar.y = newScrollBarY
+
+                                // 리사이클러뷰의 스크롤 위치 업데이트
+                                rv.scrollBy(0, (deltaY * (rv.computeVerticalScrollRange() - rv.height) / (rv.height - scrollbar.height)).toInt())
+
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            isScrollBarDragging = false
+                            false
+                        }
+                        else -> false
+                    }
+                }
+            }
         } else {
             LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false).also {
                 snapHelper = PagerSnapHelper()
                 snapHelper?.attachToRecyclerView(rv)
             }
         }
-
-        rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-
-                // 리사이클러뷰의 총 높이
-                val totalHeight = recyclerView.computeVerticalScrollRange()
-                // 리사이클러뷰의 현재 스크롤 위치
-                val scrollY = recyclerView.computeVerticalScrollOffset()
-                // 스크롤바의 높이
-//                val scrollBarHeight = scrollBar.height
-                // 스크롤바의 y좌표 계산
-//                val scrollBarY = (scrollY.toFloat() / totalHeight) * (recyclerView.height - scrollBarHeight)
-                val scrollBarY = (scrollY.toFloat() / totalHeight) * recyclerView.height
-                // 스크롤바의 위치 변경
-//                scrollBar.y = scrollBarY.toInt()
-
-                onScrollListener?.onScrolled(dx, dy, scrollBarY.toInt())
-            }
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                onScrollListener?.onScrollStateChanged(newState)
-            }
-        })
 
         // 어댑터 설정
         adapter = RvAdapter(context)
@@ -132,9 +194,18 @@ public class OViewer : LinearLayout {
      * @param data
      */
     public fun setData(data: List<String>){
-        this.data.clear()
-        this.data.addAll(data)
+        this.items.clear()
+        this.items.addAll(data)
 
-        adapter.setData(this.data)
+        adapter.setData(this.items)
+    }
+
+    public fun setData(data: List<String>, headers: Map<String, String>){
+        this.items.clear()
+        this.items.addAll(data)
+
+        this.headers = headers
+
+        adapter.setData(this.items, this.headers)
     }
 }

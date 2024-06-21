@@ -52,14 +52,6 @@
 
         </LinearLayout>
 
-        <View
-            android:id="@+id/sBar"
-            android:layout_width="20dp"
-            android:layout_height="60dp"
-            android:background="@color/black"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

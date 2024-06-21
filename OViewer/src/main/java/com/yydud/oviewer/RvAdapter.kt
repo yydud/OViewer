@@ -2,9 +2,12 @@ package com.yydud.oviewer
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.graphics.pdf.PdfRenderer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
@@ -19,11 +22,13 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
 
 public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAdapter.ViewHolder>() {
     private var items = mutableListOf<String>()
+    private var headers = mapOf<String, String>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.rv_item, parent, false)
@@ -50,6 +55,15 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
     public fun setData(data: List<String>){
         items.clear()
         items.addAll(data)
+
+        notifyDataSetChanged()
+    }
+
+    public fun setData(data: List<String>, headers: Map<String, String>){
+        items.clear()
+        items.addAll(data)
+
+        this.headers = headers
 
         notifyDataSetChanged()
     }
@@ -88,22 +102,23 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
     }
 
     private fun setImage(holder: ViewHolder, position: Int, url: String){
-        val headers = mapOf(
-            "Referer" to "https://comic.naver.com",
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-        )
+//        val headers = mapOf(
+//            "Referer" to "https://comic.naver.com",
+//            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+//        )
 
-        val glideUrl = GlideUrl(url, LazyHeaders.Builder()
-            .addHeader("Referer", "https://comic.naver.com")
-            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-            .build())
+        val glideUrlBuilder = LazyHeaders.Builder()
+        for ((key, value) in headers) {
+            glideUrlBuilder.addHeader(key, value)
+        }
+        val glideUrl = GlideUrl(url, glideUrlBuilder.build())
 
         Glide.with(context).clear(holder.image)
 
         Glide.with(context)
             .load(glideUrl)
-            .placeholder(R.drawable.mosic) // SVG placeholder 이미지
-            .error(R.drawable.mosic) // SVG error 이미지
+            .placeholder(R.drawable.mosic)
+            .error(R.drawable.mosic)
             .diskCacheStrategy(DiskCacheStrategy.ALL) // 캐싱 모드
             .skipMemoryCache(false)
             .listener(object : RequestListener<Drawable> {
@@ -115,9 +130,9 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
                 ): Boolean {
                     // 이미지 로딩 실패 시 실행되는 콜백
                     // 필요한 로직을 여기에 작성하세요
-                    Log.d("AAAA", "onLoadFailed")
+                    Log.d("AAAA", "onLoadFailed: ${e.toString()}")
 
-                    holder.refresh.visibility = View.VISIBLE
+                    holder.refresh.visibility = VISIBLE
                     return false
                 }
                 override fun onResourceReady(
@@ -132,7 +147,7 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
                     Log.d("AAAA", "onResourceReady")
 
                     setAnimation(holder.refresh, false)
-                    holder.refresh.visibility = View.GONE
+                    holder.refresh.visibility = GONE
                     return false
                 }
 
