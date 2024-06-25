@@ -2,25 +2,33 @@ package com.yydud.sample.oviewersample
 
 import android.util.Log
 import com.yydud.oviewer.OViewer
+import com.yydud.oviewer.OnPageListener
 import com.yydud.oviewer.OnScrollListener
 import com.yydud.oviewer.data.ModeType
 import com.yydud.sample.oviewersample.databinding.ActivityMainBinding
 
 class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
+    val tag = "#### Viewer ####"
 
     override fun init() {
         binding.apply {
 
             viewer.setOnScrollListener(object:OnScrollListener{
                 override fun onScrolled(dx: Int, dy: Int) {
-                    Log.d("AAAA", "onScrolled dx, dy : $dx, $dy")
-                    Log.d("AAAA", "onScrolled viewer.height : ${viewer.height}")
+                    Log.d(tag, "onScrolled dx, dy : $dx, $dy")
+                    Log.d(tag, "onScrolled viewer.height : ${viewer.height}")
                 }
 
                 override fun onScrollStateChanged(newState: Int) {
-                    Log.d("AAAA", "onScrollStateChanged newState : $newState")
+                    Log.d(tag, "onScrollStateChanged newState : $newState")
                 }
 
+            })
+
+            viewer.setOnPageListener(object:OnPageListener{
+                override fun onChangePage(position: Int) {
+                    Log.d(tag, "onChangePage position : $position")
+                }
             })
 
             resetBtn.setOnClickListener {
@@ -145,10 +153,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
 
 //                var list = listOf("https://i.pinimg.com/originals/1a/13/2d/1a132dee024ad10ac3a14dcb69ca0755.gif")
 //                var list = listOf("https://drive.google.com/file/d/1XEFm25FLyyp9v7ru0DMZqcGGGGHNK15h/view?usp=drive_link")
-                viewer.setData(list, mapOf(
+
+                viewer.setHeaders(mapOf(
                     "Referer" to "https://comic.naver.com",
                     "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
                 ))
+                viewer.setData(list)
 
 //                viewer.setData(list, mapOf())
             }

@@ -1,32 +1,16 @@
 package com.yydud.oviewer
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.RecyclerListener
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
+import com.yydud.oviewer.component.SnapPagerScrollListener
 import com.yydud.oviewer.data.ModeType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 public class OViewer : LinearLayout {
     // URL 데이터
@@ -36,11 +20,11 @@ public class OViewer : LinearLayout {
     // 레이아웃 정의
     private lateinit var rv: RecyclerView
     private lateinit var scrollbar: ImageView
-//    private lateinit var nsv: NestedScrollView
 
 
     // 스크롤바 관련
     private var onScrollListener: OnScrollListener? = null
+    private var onPageListener: OnPageListener? = null
     private var isScrollBarEnabled = false
     private var isScrollBarDragging = false
     private var lastTouchY = 0f
@@ -88,6 +72,15 @@ public class OViewer : LinearLayout {
      */
     public fun setOnScrollListener(listener: OnScrollListener?) {
         this.onScrollListener = listener
+    }
+
+    /**
+     * Set scroll listener
+     * 페이징 이벤트 콜백을 위한 리스너 설정
+     * @param listener
+     */
+    public fun setOnPageListener(listener: OnPageListener?) {
+        this.onPageListener = listener
     }
 
     private fun setupRecyclerView(mode: ModeType) {
@@ -170,6 +163,20 @@ public class OViewer : LinearLayout {
             LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false).also {
                 snapHelper = PagerSnapHelper()
                 snapHelper?.attachToRecyclerView(rv)
+
+                val listener: SnapPagerScrollListener = SnapPagerScrollListener(
+                    snapHelper!!,
+                    SnapPagerScrollListener.ON_SCROLL,
+                    true,
+                    object : SnapPagerScrollListener.OnChangeListener {
+                        override fun onSnapped(position: Int) {
+                            // 현재 페이지 번호 사용
+                            onPageListener?.onChangePage(position)
+                        }
+                    }
+                )
+
+                rv.addOnScrollListener(listener)
             }
         }
 
@@ -196,16 +203,16 @@ public class OViewer : LinearLayout {
     public fun setData(data: List<String>){
         this.items.clear()
         this.items.addAll(data)
-
         adapter.setData(this.items)
     }
 
-    public fun setData(data: List<String>, headers: Map<String, String>){
-        this.items.clear()
-        this.items.addAll(data)
-
+    /**
+     * Set data
+     * 해더 정보 넣기
+     * @param headers
+     */
+    public fun setHeaders(headers: Map<String, String>){
         this.headers = headers
-
-        adapter.setData(this.items, this.headers)
+        adapter.setHeaders(this.headers)
     }
 }

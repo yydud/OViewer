@@ -39,6 +39,10 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
         return position.toLong()
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
 
@@ -51,7 +55,11 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
     }
 
     override fun getItemCount(): Int = items.size
-
+    // headers 넣기
+    public fun setHeaders(headers: Map<String, String>){
+        this.headers = headers
+    }
+    // 데이터 넣기
     public fun setData(data: List<String>){
         items.clear()
         items.addAll(data)
@@ -102,11 +110,6 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
     }
 
     private fun setImage(holder: ViewHolder, position: Int, url: String){
-//        val headers = mapOf(
-//            "Referer" to "https://comic.naver.com",
-//            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-//        )
-
         val glideUrlBuilder = LazyHeaders.Builder()
         for ((key, value) in headers) {
             glideUrlBuilder.addHeader(key, value)
@@ -130,7 +133,6 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
                 ): Boolean {
                     // 이미지 로딩 실패 시 실행되는 콜백
                     // 필요한 로직을 여기에 작성하세요
-                    Log.d("AAAA", "onLoadFailed: ${e.toString()}")
 
                     holder.refresh.visibility = VISIBLE
                     return false
@@ -144,7 +146,6 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
                 ): Boolean {
                     // 이미지 로딩 성공 시 실행되는 콜백
                     // 필요한 로직을 여기에 작성하세요
-                    Log.d("AAAA", "onResourceReady")
 
                     setAnimation(holder.refresh, false)
                     holder.refresh.visibility = GONE
