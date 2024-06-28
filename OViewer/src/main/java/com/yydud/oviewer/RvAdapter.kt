@@ -46,11 +46,11 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
 
-        setImage(holder, position, item)
+        setImage(holder, item)
 
         holder.refresh.setOnClickListener {
             setAnimation(holder.refresh, true)
-            setImage(holder, position, item)
+            setImage(holder, item)
         }
     }
 
@@ -109,7 +109,7 @@ public class RvAdapter(private var context: Context): RecyclerView.Adapter<RvAda
         }
     }
 
-    private fun setImage(holder: ViewHolder, position: Int, url: String){
+    private fun setImage(holder: ViewHolder, url: String){
         val glideUrlBuilder = LazyHeaders.Builder()
         for ((key, value) in headers) {
             glideUrlBuilder.addHeader(key, value)

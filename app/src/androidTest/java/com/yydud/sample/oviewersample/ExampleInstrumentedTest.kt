@@ -1,4 +1,4 @@
-package com.yydud.oviewer
+package com.yydud.sample.oviewersample
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -14,11 +14,11 @@ import org.junit.Assert.*
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-public class ExampleInstrumentedTest {
+class ExampleInstrumentedTest {
     @Test
-    public fun useAppContext() {
+    fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.yydud.oviewer.test", appContext.packageName)
+        assertEquals("com.yydud.sample.oviewersample", appContext.packageName)
     }
 }
