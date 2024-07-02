@@ -24,7 +24,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                 }
 
             })
-            
+
             viewer.setOnPageListener(object:OnPageListener{
                 override fun onChangePage(position: Int) {
                     Log.d(tag, "onChangePage position : $position")

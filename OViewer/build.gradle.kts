@@ -42,7 +42,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.yydud"
                 artifactId = "oviewer"
-                version = "0.0.4"
+                version = "0.0.5"
 
                 pom {
                     name.set("OViewer-AOS")
@@ -54,7 +54,7 @@ afterEvaluate {
                 from(components["debug"])
                 groupId = "com.github.yydud"
                 artifactId = "oviewer"
-                version = "0.0.4"
+                version = "0.0.5"
 
                 pom {
                     name.set("OViewer-AOS")
